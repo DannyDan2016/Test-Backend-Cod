@@ -26,7 +26,8 @@ Test-Backend-Cod/
 └── pytest.ini  # Configuración de Pytest
 
 
-Instalación y Configuración
+## Instalación y Configuración
+
 Sigue estos pasos para configurar el proyecto:
 
 1. Clonar el repositorio:
@@ -49,7 +50,8 @@ pip install -r requirements.txt
 Asegúrate de tener FFmpeg instalado en tu sistema para grabar la ejecución de las pruebas.
 
 
-Casos de Prueba
+## Casos de Prueba
+
 El proyecto incluye tres casos de prueba para el endpoint POST /api/users de ReqRes:
 
 Caso Exitoso 1: Crear usuario con name y job, verificar código 201 y campos name, job, id, createdAt.
@@ -57,7 +59,7 @@ Caso Exitoso 2: Crear usuario con name, job, gender, age, verificar código 201,
 Caso Fallido 3: Enviar JSON inválido con coma al final, verificar código 400.
 
 
-Contribuciones
+## Contribuciones
 Si deseas contribuir:
 
 Haz un fork del repositorio.
@@ -66,5 +68,5 @@ Realiza los cambios y haz commit.
 Sube los cambios y abre un Pull Request para revisión.
 
 
-Licencia
+## Licencia
 Autor Danny Parrado
