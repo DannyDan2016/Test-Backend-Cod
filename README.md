@@ -1,4 +1,4 @@
-Test-Backend-Cod
+## Test-Backend-Cod
 
 Este repositorio, "Test-Backend-Cod", contiene un proyecto de automatización de pruebas para la API de ReqRes, utilizando Python, Pytest y Requests. El objetivo es validar la creación de usuarios y verificar las respuestas de la API, siguiendo buenas prácticas como el Page Object Model (POM).
 
