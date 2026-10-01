@@ -1,10 +1,5 @@
 import pytest
 
-from pages.api_client import APIClient
-
-# Crear una instancia del cliente API
-cliente_api = APIClient()
-
 
 @pytest.mark.parametrize(
     ("datos_usuario", "estado_esperado", "campos_respuesta_esperados"),
@@ -32,9 +27,9 @@ cliente_api = APIClient()
         ),
     ],
 )
-def test_crear_usuario(datos_usuario, estado_esperado, campos_respuesta_esperados):
+def test_crear_usuario(reqres_client, datos_usuario, estado_esperado, campos_respuesta_esperados):
     """Prueba la creación de usuarios con diferentes casos de datos de entrada."""
-    respuesta = cliente_api.create_user(datos_usuario)
+    respuesta = reqres_client.create_user(datos_usuario)
 
     # Validar que el código de estado HTTP sea el esperado
     assert respuesta.status_code == estado_esperado, (
