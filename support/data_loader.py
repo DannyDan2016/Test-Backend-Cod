@@ -13,6 +13,7 @@ Las claves se piden con rutas de puntos, p. ej. ``reqres.usuarios.crear_basico``
 existe, el error indica qué tramo falta, en qué archivos se buscó y qué claves hay disponibles.
 """
 
+import copy
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -123,6 +124,10 @@ class TestData:
             if prefijo in self._origenes:
                 return ", ".join(p.as_posix() for p in self._origenes[prefijo])
         return f"ningún archivo bajo {self.base_dir.name}/{{{CARPETA_COMUN},{self.env}}}"
+
+    def get_all(self) -> dict[str, Any]:
+        """Copia de todos los datos combinados del ambiente."""
+        return copy.deepcopy(self._datos)
 
     def get(self, clave: str) -> Any:
         """Devuelve el valor de ``clave`` (ruta con puntos) o lanza un error explicativo."""
