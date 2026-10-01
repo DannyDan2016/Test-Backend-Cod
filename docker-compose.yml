@@ -4,6 +4,7 @@
 #   docker compose run --rm api-tests -m smoke            # argumentos extra para pytest
 #   TEST_ENV=prod docker compose run --rm api-tests       # ambiente objetivo
 #   docker compose --profile report run --rm allure       # genera reports/allure-report
+#   docker compose run --rm lint                          # ruff check + ruff format --check
 #
 # En Linux, para que los archivos de ./reports pertenezcan a tu usuario:
 #   HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose build
@@ -13,6 +14,7 @@ services:
   api-tests:
     build:
       context: .
+      target: runtime
       args:
         UID: ${HOST_UID:-1000}
         GID: ${HOST_GID:-1000}
@@ -26,6 +28,14 @@ services:
       TEST_ENV: ${TEST_ENV:-prod}
     volumes:
       - ./reports:/app/reports
+
+  lint:
+    # Lint dentro de la misma imagen base que ejecuta la suite (etapa "lint" del Dockerfile)
+    build:
+      context: .
+      target: lint
+    image: test-backend-cod-lint:local
+    profiles: ["lint"]
 
   allure:
     # Genera el reporte HTML a partir de reports/allure-results (Allure 3 sobre Node 24)
