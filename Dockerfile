@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # UID/GID del usuario sin privilegios. Se pueden ajustar al usuario del host
-# (docker compose build --build-arg UID=$(id -u) --build-arg GID=$(id -g)) para que
+# (HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose build) para que
 # los resultados escritos en el volumen ./reports pertenezcan a ese usuario en Linux.
 ARG UID=1000
 ARG GID=1000
@@ -31,5 +31,7 @@ RUN mkdir -p /app/reports && chown qa:qa /app/reports
 
 USER qa
 
-# -p no:cacheprovider: /app no es escribible y la caché de pytest no aporta nada en un contenedor
-ENTRYPOINT ["pytest", "-p", "no:cacheprovider"]
+# -p no:cacheprovider: /app no es escribible y la caché de pytest no aporta nada en un contenedor.
+# --clean-alluredir: cada ejecución parte de reports/allure-results vacío, así el reporte
+# de Allure refleja solo la última ejecución y no mezcla resultados antiguos del volumen.
+ENTRYPOINT ["pytest", "-p", "no:cacheprovider", "--clean-alluredir"]
