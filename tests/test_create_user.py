@@ -27,9 +27,9 @@ import pytest
         ),
     ],
 )
-def test_crear_usuario(reqres_client, datos_usuario, estado_esperado, campos_respuesta_esperados):
+def test_crear_usuario(users_service, datos_usuario, estado_esperado, campos_respuesta_esperados):
     """Prueba la creación de usuarios con diferentes casos de datos de entrada."""
-    respuesta = reqres_client.create_user(datos_usuario)
+    respuesta = users_service.create(datos_usuario)
 
     # Validar que el código de estado HTTP sea el esperado
     assert respuesta.status_code == estado_esperado, (

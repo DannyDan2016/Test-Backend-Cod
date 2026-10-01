@@ -2,7 +2,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from api.reqres_client import ReqResClient
+from api.reqres import ReqResClient, UsersService
 from config.settings import Settings, load_settings
 
 
@@ -26,3 +26,9 @@ def reqres_client(settings: Settings) -> Iterator[ReqResClient]:
     """Cliente de ReqRes compartido por la sesión; cierra la conexión al terminar."""
     with ReqResClient.from_settings(settings) as cliente:
         yield cliente
+
+
+@pytest.fixture(scope="session")
+def users_service(reqres_client: ReqResClient) -> UsersService:
+    """Service object de ``/users`` sobre el cliente de la sesión."""
+    return UsersService(reqres_client)
