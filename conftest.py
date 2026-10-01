@@ -7,6 +7,7 @@ import pytest
 
 from api.reqres import ReqResClient, UsersService
 from config.settings import Settings, load_settings
+from support.api_key_policy import apply_api_key_policy
 from support.bdd_tags import apply_tag, mark_known_bugs
 from support.data_loader import TestData
 
@@ -27,7 +28,7 @@ def _settings_de(config: pytest.Config) -> Settings:
 def pytest_report_header(config: pytest.Config) -> list[str]:
     """Cabecera del informe: ambiente y si hay key (nunca su valor)."""
     ajustes = _settings_de(config)
-    key = "definida" if ajustes.reqres_api_key else "NO definida"
+    key = "definida" if ajustes.reqres_api_key else "NO definida (se omiten los @requiere_key)"
     return [f"ambiente: {ajustes.env} | ReqRes: {ajustes.reqres_base_url} | REQRES_API_KEY: {key}"]
 
 
@@ -41,6 +42,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     # trylast: se ejecuta después de la deselección por -m/-k, sobre los items que van a correr
     ajustes = _settings_de(config)
     mark_known_bugs(items, ajustes.env)
+    apply_api_key_policy(items, ajustes)
 
 
 @pytest.fixture(scope="session")
