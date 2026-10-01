@@ -7,6 +7,7 @@ import pytest
 
 from api.reqres import ReqResClient, UsersService
 from config.settings import Settings, load_settings
+from support.allure_http import attach_exchange
 from support.api_key_policy import apply_api_key_policy
 from support.bdd_tags import apply_tag, mark_known_bugs
 from support.data_loader import TestData
@@ -61,6 +62,7 @@ def test_data(settings: Settings) -> TestData:
 def reqres_client(settings: Settings) -> Iterator[ReqResClient]:
     """Cliente de ReqRes compartido por la sesión; cierra la conexión al terminar."""
     with ReqResClient.from_settings(settings) as cliente:
+        cliente.session.hooks["response"].append(attach_exchange)
         yield cliente
 
 
