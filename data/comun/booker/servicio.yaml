@@ -1,0 +1,12 @@
+# Configuración funcional de restful-booker usada por los fixtures.
+
+warmup:
+  # Primer /ping con timeout amplio: la app de Heroku puede tardar en arrancar en frío
+  timeout_s: 30
+  # /ping responde 201 (debería ser 200); se aceptan ambos para no confundir disponibilidad con bug
+  status_disponible: [200, 201]
+
+# Credenciales públicas de la API de demostración (documentadas en restful-booker.herokuapp.com)
+credenciales:
+  username: admin
+  password: password123
