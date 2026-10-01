@@ -1,0 +1,10 @@
+# Overrides del ambiente staging (ejemplo): umbrales de tiempo más holgados.
+# Solo se declara lo que cambia; el resto se hereda de data/comun/reqres/usuarios.yaml.
+
+crear_basico:
+  expected:
+    max_time_ms: 6000
+
+crear_con_campos_extra:
+  expected:
+    max_time_ms: 6000
