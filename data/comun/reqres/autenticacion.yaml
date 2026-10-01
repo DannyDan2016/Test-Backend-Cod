@@ -1,0 +1,84 @@
+# Registro e inicio de sesión en ReqRes. Solo los usuarios predefinidos de la API pueden
+# registrarse o iniciar sesión; sus credenciales son públicas (documentación de reqres.in).
+
+# --- Registro ------------------------------------------------------------------------------
+
+registro_correcto:
+  id: TC-API-039
+  descripcion: Un usuario predefinido se registra y recibe id y token
+  request:
+    body: {email: eve.holt@reqres.in, password: pistol}
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/register
+    json_equals:
+      id: 4
+
+registro_sin_password:
+  id: TC-API-041
+  descripcion: Registro sin password
+  request:
+    body: {email: eve.holt@reqres.in}
+  expected:
+    status: 400
+    schema: reqres/error_response
+    json_equals:
+      error: Missing password
+
+registro_usuario_no_definido:
+  id: TC-API-043
+  descripcion: Solo los usuarios predefinidos pueden registrarse
+  request:
+    body: {email: usuario.qa@ejemplo.com, password: clave-segura}
+  expected:
+    status: 400
+    schema: reqres/error_response
+    json_equals:
+      error: 'Note: Only defined users succeed registration'
+
+# --- Inicio de sesión ----------------------------------------------------------------------
+
+login_correcto:
+  id: TC-API-045
+  descripcion: Un usuario predefinido inicia sesión y recibe un token
+  request:
+    body: {email: eve.holt@reqres.in, password: cityslicka}
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/login
+
+login_sin_password:
+  id: TC-API-047
+  descripcion: Login sin password
+  request:
+    body: {email: peter@klaven}
+  expected:
+    status: 400
+    schema: reqres/error_response
+    json_equals:
+      error: Missing password
+
+login_sin_email:
+  id: TC-API-048
+  descripcion: Login sin email
+  request:
+    body: {password: cityslicka}
+  expected:
+    status: 400
+    schema: reqres/error_response
+    json_equals:
+      error: Missing email or username
+
+login_password_incorrecta:
+  id: TC-API-049
+  descripcion: >-
+    Una password incorrecta debería rechazarse con 400/401 y un error; ReqRes devuelve 200
+    con token (DEV-004)
+  request:
+    body: {email: eve.holt@reqres.in, password: password-incorrecta}
+  expected:
+    status: [400, 401]
+    schema: reqres/error_response
+    json_absent: [token]

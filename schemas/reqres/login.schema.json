@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reqres/login",
+  "title": "Respuesta de POST /api/login (LoginResponse de la OpenAPI 2.1.0)",
+  "type": "object",
+  "required": ["token"],
+  "properties": {
+    "token": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

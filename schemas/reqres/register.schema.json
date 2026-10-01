@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reqres/register",
+  "title": "Respuesta de POST /api/register (RegisterResponse de la OpenAPI 2.1.0)",
+  "description": "La spec solo exige token; aquí también se exige id porque es la evidencia del registro.",
+  "type": "object",
+  "required": ["id", "token"],
+  "properties": {
+    "id": { "type": "integer", "minimum": 1 },
+    "token": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}
