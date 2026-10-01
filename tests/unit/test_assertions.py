@@ -104,3 +104,12 @@ def test_solo_status_no_exige_cuerpo_json():
 def test_clave_desconocida_en_expected_es_un_error_de_datos():
     with pytest.raises(ValueError, match=r"no permitidas en expected: \['json_equal'\]"):
         assert_expected(_respuesta(body=CUERPO), {"json_equal": {"name": "Ana"}})
+
+
+def test_el_eco_puede_estar_anidado_en_una_ruta():
+    enviado = {"firstname": "Ana", "bookingdates": {"checkin": "2026-11-02"}}
+    respuesta = _respuesta(body={"bookingid": 7, "booking": dict(enviado)})
+
+    assert_expected(respuesta, {"echo_body": "booking"}, sent_body=enviado)
+    with pytest.raises(AssertionError, match=r"eco booking\.firstname: enviado 'Eva'"):
+        assert_expected(respuesta, {"echo_body": "booking"}, sent_body={"firstname": "Eva"})
