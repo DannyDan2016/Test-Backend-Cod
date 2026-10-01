@@ -1,0 +1,31 @@
+# --- Entorno y secretos ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# --- pytest / herramientas ---
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Reportes generados ---
+report.html
+reportes/
+reports/
+allure-results/
+allure-report/
+
+# --- Editores y SO ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
