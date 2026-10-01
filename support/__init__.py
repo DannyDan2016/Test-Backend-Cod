@@ -1,1 +1,1 @@
-"""Utilidades del framework de pruebas: datos YAML, contratos y aserciones."""
+"""Utilidades del framework de pruebas: datos YAML, contratos, aserciones y tags BDD."""
