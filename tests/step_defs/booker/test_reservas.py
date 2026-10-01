@@ -3,6 +3,7 @@
 from pytest_bdd import given, parsers, scenarios, when
 
 from api.booker import BookingService
+from support.assertions import assert_expected
 from support.context import ScenarioContext
 from support.data_loader import TestData
 
@@ -33,6 +34,19 @@ def create_booking(
     if ctx.response.ok and (booking_id := ctx.response.json().get("bookingid")):
         ctx.resource_id = booking_id
         created_bookings.append(booking_id)
+
+
+@given(parsers.parse('una reserva creada según el caso "{clave}"'))
+def booking_created(
+    clave: str,
+    test_data: TestData,
+    booking_service: BookingService,
+    created_bookings: list[int],
+    ctx: ScenarioContext,
+):
+    """Precondición: crea la reserva y verifica que la creación cumple lo esperado del caso."""
+    create_booking(clave, test_data, booking_service, created_bookings, ctx)
+    assert_expected(ctx.require_response(), ctx.require_case().expected, sent_body=ctx.sent_body)
 
 
 @when(parsers.parse('consulto la reserva creada según el caso "{clave}"'))
