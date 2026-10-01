@@ -1,0 +1,79 @@
+# Datos y valores esperados de /booking de restful-booker.
+# Cada escenario crea sus propias reservas (nunca ids fijos) y las borra al terminar.
+# Las fechas van entre comillas: sin ellas YAML las convertiría en objetos date.
+
+crear:
+  descripcion: Crear una reserva devuelve su id y el eco completo de los datos
+  request:
+    body: &reserva_nueva
+      firstname: Ana
+      lastname: Tester QA
+      totalprice: 245
+      depositpaid: true
+      bookingdates:
+        checkin: '2026-11-02'
+        checkout: '2026-11-06'
+      additionalneeds: Desayuno
+  expected:
+    # Lo correcto sería 201 Created; se exige en el escenario @known-bug (BKR-BUG-6).
+    # Aquí se admite el 200 actual para que el flujo verifique el resto del ciclo de vida.
+    status: [200, 201]
+    max_time_ms: 5000
+    schema: booker/booking_created
+    echo_body: booking
+
+consultar:
+  descripcion: La reserva consultada coincide con los últimos datos enviados
+  expected:
+    status: 200
+    max_time_ms: 5000
+    schema: booker/booking
+    echo_body: true
+
+actualizar:
+  descripcion: Reemplazar la reserva con token devuelve los datos nuevos
+  request:
+    body:
+      firstname: Ana
+      lastname: Tester QA
+      totalprice: 310
+      depositpaid: false
+      bookingdates:
+        checkin: '2026-11-03'
+        checkout: '2026-11-08'
+      additionalneeds: Cuna y desayuno
+  expected:
+    status: 200
+    max_time_ms: 5000
+    schema: booker/booking
+    echo_body: true
+
+borrar:
+  descripcion: Borrar la reserva con token
+  expected:
+    # Lo correcto sería 200 o 204; restful-booker responde 201 (BKR-BUG-3, escenario @known-bug).
+    # La evidencia del borrado es el 404 posterior.
+    status: [200, 201, 204]
+    max_time_ms: 5000
+
+consultar_borrada:
+  id: TC-API-217
+  descripcion: Una reserva borrada ya no existe
+  expected:
+    status: 404
+
+# --- Bugs conocidos: estos casos esperan el comportamiento CORRECTO -------------------------
+
+crear_responde_201:
+  id: TC-API-203
+  descripcion: Crear una reserva debería responder 201 Created
+  request:
+    body: *reserva_nueva
+  expected:
+    status: 201
+
+borrar_responde_sin_contenido:
+  id: TC-API-216
+  descripcion: Borrar una reserva debería responder 200 o 204, no 201 Created
+  expected:
+    status: [200, 204]
