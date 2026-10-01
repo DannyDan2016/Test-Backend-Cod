@@ -1,0 +1,46 @@
+# Ejecución de la suite en contenedor.
+#   docker compose build
+#   docker compose run --rm api-tests                     # suite completa
+#   docker compose run --rm api-tests -m smoke            # argumentos extra para pytest
+#   TEST_ENV=prod docker compose run --rm api-tests       # ambiente objetivo
+#   docker compose --profile report run --rm allure       # genera reports/allure-report
+#
+# En Linux, para que los archivos de ./reports pertenezcan a tu usuario:
+#   HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose build
+# Si ./reports no existe, créalo antes (mkdir reports) para que Docker no lo cree como root.
+
+services:
+  api-tests:
+    build:
+      context: .
+      args:
+        UID: ${HOST_UID:-1000}
+        GID: ${HOST_GID:-1000}
+    image: test-backend-cod-api-tests:local
+    # .env es opcional: se inyecta en runtime y nunca se copia a la imagen
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Prioridad: variable del shell > .env > "prod"
+      TEST_ENV: ${TEST_ENV:-prod}
+    volumes:
+      - ./reports:/app/reports
+
+  allure:
+    # Genera el reporte HTML a partir de reports/allure-results (Allure 3 sobre Node 24)
+    image: node:24-slim
+    profiles: ["report"]
+    user: node
+    working_dir: /work
+    environment:
+      npm_config_update_notifier: "false"
+    volumes:
+      - ./reports:/work/reports
+    # Se borra el reporte previo: si la carpeta de salida existe, Allure 3 escribe en una
+    # subcarpeta (awesome/) y el index.html raíz queda desactualizado.
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        rm -rf reports/allure-report &&
+        npx --yes allure@3.19.1 generate reports/allure-results --output reports/allure-report
