@@ -140,6 +140,7 @@ def assert_expected(
     resp: requests.Response, expected: dict[str, Any], sent_body: Any = None
 ) -> None:
     """Verifica ``resp`` contra ``expected``; lanza ``AssertionError`` con todas las diferencias."""
+    __tracebackhide__ = True  # el fallo se muestra en el paso, no dentro del helper
     _validar_expected(expected)
     errores: list[str] = []
 
