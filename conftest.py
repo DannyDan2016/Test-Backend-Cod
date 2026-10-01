@@ -1,7 +1,9 @@
+from collections.abc import Iterator
+
 import pytest
 
+from api.reqres_client import ReqResClient
 from config.settings import Settings, load_settings
-from pages.api_client import APIClient
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -20,6 +22,7 @@ def settings(request: pytest.FixtureRequest) -> Settings:
 
 
 @pytest.fixture(scope="session")
-def cliente_api():
-    """Fixture que crea y proporciona una instancia de APIClient para usar en las pruebas."""
-    return APIClient()
+def reqres_client(settings: Settings) -> Iterator[ReqResClient]:
+    """Cliente de ReqRes compartido por la sesión; cierra la conexión al terminar."""
+    with ReqResClient.from_settings(settings) as cliente:
+        yield cliente
