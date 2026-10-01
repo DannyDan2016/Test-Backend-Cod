@@ -19,9 +19,17 @@ RAIZ_PROYECTO = Path(__file__).resolve().parents[1]
 AMBIENTE_POR_DEFECTO = "prod"
 TIMEOUT_POR_DEFECTO_S = 10.0
 
-# URLs base por ambiente. Para añadir uno nuevo (p. ej. "staging") basta con otra entrada.
+# URLs base por ambiente. Para añadir uno nuevo basta con otra entrada y, si sus datos o
+# esperados difieren, una carpeta data/<ambiente>/ con los overrides.
 AMBIENTES: dict[str, dict[str, str]] = {
     "prod": {
+        "reqres_base_url": "https://reqres.in/api",
+        "booker_base_url": "https://restful-booker.herokuapp.com",
+    },
+    # Ambiente de ejemplo: las APIs públicas no tienen staging, así que apunta a las mismas URLs
+    # (sobrescribibles desde .env) y demuestra los overrides de data/staging/ (p. ej. umbrales
+    # de tiempo más holgados).
+    "staging": {
         "reqres_base_url": "https://reqres.in/api",
         "booker_base_url": "https://restful-booker.herokuapp.com",
     },
