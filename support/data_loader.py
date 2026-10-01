@@ -30,11 +30,11 @@ CLAVES_CASO = frozenset({"id", "descripcion", "request", "expected"})
 CLAVES_REQUEST = frozenset({"path_params", "query", "body", "raw_body", "api_key"})
 
 
-class DatosError(Exception):
+class DataError(Exception):
     """Error en los archivos de datos de prueba (YAML inválido, clave inexistente...)."""
 
 
-class ClaveNoEncontradaError(DatosError, KeyError):
+class DataKeyError(DataError, KeyError):
     """La clave pedida no existe en los datos del ambiente."""
 
     def __str__(self) -> str:  # KeyError entrecomilla el mensaje; se muestra tal cual
@@ -42,8 +42,8 @@ class ClaveNoEncontradaError(DatosError, KeyError):
 
 
 @dataclass(frozen=True)
-class Caso:
-    """Caso de prueba declarado en YAML: datos de entrada y valores esperados."""
+class Case:
+    """Case de prueba declarado en YAML: datos de entrada y valores esperados."""
 
     clave: str
     id: str | None
@@ -79,11 +79,11 @@ def _leer_yaml(ruta: Path) -> dict[str, Any]:
     try:
         contenido = yaml.safe_load(ruta.read_text(encoding="utf-8"))
     except yaml.YAMLError as error:
-        raise DatosError(f"YAML inválido en {ruta}: {error}") from error
+        raise DataError(f"YAML inválido en {ruta}: {error}") from error
     if contenido is None:
         return {}
     if not isinstance(contenido, dict):
-        raise DatosError(f"{ruta} debe contener un mapa clave-valor en el primer nivel")
+        raise DataError(f"{ruta} debe contener un mapa clave-valor en el primer nivel")
     return contenido
 
 
@@ -96,7 +96,7 @@ class TestData:
         self.env = env
         self.base_dir = base_dir
         if not (base_dir / CARPETA_COMUN).is_dir():
-            raise DatosError(f"No existe la carpeta de datos comunes: {base_dir / CARPETA_COMUN}")
+            raise DataError(f"No existe la carpeta de datos comunes: {base_dir / CARPETA_COMUN}")
         self._datos: dict[str, Any] = {}
         # Archivos de origen por espacio de nombres, para los mensajes de error
         self._origenes: dict[str, list[Path]] = {}
@@ -132,7 +132,7 @@ class TestData:
             if not isinstance(nodo, dict) or parte not in nodo:
                 contexto = ".".join(recorrido) or "(raíz)"
                 disponibles = ", ".join(sorted(nodo)) if isinstance(nodo, dict) else "-"
-                raise ClaveNoEncontradaError(
+                raise DataKeyError(
                     f"No existe la clave {clave!r} en los datos del ambiente {self.env!r}: "
                     f"falta {parte!r} dentro de {contexto!r} (archivos: {self._origen(clave)}). "
                     f"Claves disponibles: {disponibles}"
@@ -141,24 +141,24 @@ class TestData:
             recorrido.append(parte)
         return nodo
 
-    def case(self, clave: str) -> Caso:
+    def case(self, clave: str) -> Case:
         """Devuelve el caso ``clave`` validando su estructura (detecta erratas en el YAML)."""
         crudo = self.get(clave)
         origen = self._origen(clave)
         if not isinstance(crudo, dict):
-            raise DatosError(f"El caso {clave!r} ({origen}) debe ser un mapa")
+            raise DataError(f"El caso {clave!r} ({origen}) debe ser un mapa")
         if desconocidas := set(crudo) - CLAVES_CASO:
-            raise DatosError(
+            raise DataError(
                 f"El caso {clave!r} ({origen}) tiene claves no permitidas: "
                 f"{sorted(desconocidas)}. Permitidas: {sorted(CLAVES_CASO)}"
             )
         request = crudo.get("request") or {}
         if desconocidas := set(request) - CLAVES_REQUEST:
-            raise DatosError(
+            raise DataError(
                 f"El bloque request del caso {clave!r} ({origen}) tiene claves no permitidas: "
                 f"{sorted(desconocidas)}. Permitidas: {sorted(CLAVES_REQUEST)}"
             )
-        return Caso(
+        return Case(
             clave=clave,
             id=crudo.get("id"),
             descripcion=crudo.get("descripcion", ""),

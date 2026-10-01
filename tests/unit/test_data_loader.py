@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from support.data_loader import ClaveNoEncontradaError, DatosError, TestData, deep_merge
+from support.data_loader import DataError, DataKeyError, TestData, deep_merge
 
 pytestmark = pytest.mark.unit
 
@@ -70,7 +70,7 @@ def test_el_ambiente_sobrescribe_en_profundidad(datos: Path):
 
 
 def test_clave_inexistente_indica_tramo_archivo_y_disponibles(datos: Path):
-    with pytest.raises(ClaveNoEncontradaError) as error:
+    with pytest.raises(DataKeyError) as error:
         TestData("staging", base_dir=datos).get("api.usuarios.crearx")
 
     mensaje = str(error.value)
@@ -84,12 +84,12 @@ def test_clave_inexistente_indica_tramo_archivo_y_disponibles(datos: Path):
 def test_caso_con_clave_mal_escrita_falla_de_forma_explicita(datos: Path):
     _escribir(datos, "comun/api/errata.yaml", "caso:\n  expectd: {status: 200}\n")
 
-    with pytest.raises(DatosError, match=r"claves no permitidas: \['expectd'\]"):
+    with pytest.raises(DataError, match=r"claves no permitidas: \['expectd'\]"):
         TestData("prod", base_dir=datos).case("api.errata.caso")
 
 
 def test_yaml_invalido_indica_el_archivo(datos: Path):
     _escribir(datos, "comun/api/roto.yaml", "clave: [sin cerrar\n")
 
-    with pytest.raises(DatosError, match=r"YAML inválido en .*roto\.yaml"):
+    with pytest.raises(DataError, match=r"YAML inválido en .*roto\.yaml"):
         TestData("prod", base_dir=datos)
