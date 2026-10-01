@@ -26,6 +26,11 @@ services:
     environment:
       # Prioridad: variable del shell > .env > "prod"
       TEST_ENV: ${TEST_ENV:-prod}
+      # Sin valor: se copian del shell solo si existen (en la CI, desde secrets y el runner).
+      # Si no existen en el shell, no se definen y prevalece lo que haya en .env.
+      REQRES_API_KEY:
+      CI:
+      ALLOW_MISSING_API_KEY:
     volumes:
       - ./reports:/app/reports
 
@@ -41,10 +46,13 @@ services:
     # Genera el reporte HTML a partir de reports/allure-results (Allure 3 sobre Node 24)
     image: node:24-slim
     profiles: ["report"]
-    user: node
+    # Mismo UID/GID que el host (HOST_UID/HOST_GID) para poder escribir en ./reports en Linux/CI
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     working_dir: /work
     environment:
       npm_config_update_notifier: "false"
+      # HOME escribible para la caché de npx aunque el UID no exista en la imagen
+      HOME: /tmp
     volumes:
       - ./reports:/work/reports
     # Se borra el reporte previo: si la carpeta de salida existe, Allure 3 escribe en una
