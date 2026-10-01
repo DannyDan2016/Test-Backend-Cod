@@ -1,0 +1,31 @@
+# Actualizaciones automáticas de dependencias. Los PRs de Dependabot no reciben secrets,
+# así que en ellos la CI omite los escenarios @requiere_key (ver el workflow api-tests.yml).
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: build(deps)
+    groups:
+      # pytest y sus plugins se actualizan juntos para no romper la compatibilidad
+      pytest:
+        patterns: ["pytest*", "allure-*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: build(docker)
