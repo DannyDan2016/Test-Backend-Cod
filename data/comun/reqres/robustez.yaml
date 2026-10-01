@@ -11,3 +11,5 @@ json_malformado:
     schema: reqres/error_response
     json_equals:
       error: invalid_json
+    json_types:
+      message: string
