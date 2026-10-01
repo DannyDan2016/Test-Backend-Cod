@@ -1,0 +1,6 @@
+# Overrides del ambiente staging (ejemplo): umbral de retardo más holgado, siempre por debajo
+# del timeout del cliente (REQUEST_TIMEOUT_S, 10 s por defecto).
+
+respuesta_con_retardo:
+  expected:
+    max_time_ms: 9000

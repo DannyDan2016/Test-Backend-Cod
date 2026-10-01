@@ -13,3 +13,33 @@ json_malformado:
       error: invalid_json
     json_types:
       message: string
+
+api_key_invalida:
+  id: TC-API-052
+  descripcion: Una api key no reconocida se rechaza con 403 invalid_api_key
+  request:
+    # Valor ficticio a propósito: no es un secreto
+    api_key: clave-invalida-qa-0000
+    path_params: {id: 2}
+  expected:
+    status: 403
+    schema: reqres/error_response
+    headers:
+      X-Reqres-Help: '^invalid_api_key$'
+    json_equals:
+      error: invalid_api_key
+    json_types:
+      message: string
+
+respuesta_con_retardo:
+  id: TC-API-009
+  descripcion: >-
+    Con delay=3 la API tarda al menos 3 s y responde dentro del umbral del ambiente
+    (por debajo del timeout del cliente)
+  request:
+    query: {delay: 3}
+  expected:
+    status: 200
+    min_time_ms: 3000
+    max_time_ms: 6000
+    schema: reqres/user_list
