@@ -44,3 +44,21 @@ Característica: Gestión de usuarios en ReqRes
     Dado el caso de prueba "reqres.usuarios.crear_con_campos_extra"
     Cuando creo el usuario del caso
     Entonces la respuesta cumple lo esperado del caso
+
+  @smoke @contrato @tc-api-026 @tc-api-027
+  Escenario: Reemplazar un usuario devuelve los datos enviados y la fecha de actualización
+    Dado el caso de prueba "reqres.usuarios.reemplazar"
+    Cuando reemplazo el usuario del caso
+    Entonces la respuesta cumple lo esperado del caso
+
+  @regression @contrato @tc-api-030
+  Escenario: Actualizar parcialmente un usuario devuelve solo los campos enviados
+    Dado el caso de prueba "reqres.usuarios.actualizar_parcial"
+    Cuando actualizo parcialmente el usuario del caso
+    Entonces la respuesta cumple lo esperado del caso
+
+  @smoke @tc-api-032
+  Escenario: Borrar un usuario responde sin contenido
+    Dado el caso de prueba "reqres.usuarios.borrar"
+    Cuando borro el usuario del caso
+    Entonces la respuesta cumple lo esperado del caso

@@ -99,3 +99,43 @@ crear_con_campos_extra:
     echo_body: true
     json_types:
       age: integer
+
+# --- Modificación y borrado ----------------------------------------------------------------
+
+reemplazar:
+  id: TC-API-026
+  descripcion: PUT devuelve el eco del payload con updatedAt y sin createdAt
+  request:
+    path_params: {id: 2}
+    body:
+      name: Janet Weaver
+      job: Líder de QA
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user_updated
+    echo_body: true
+
+actualizar_parcial:
+  id: TC-API-030
+  descripcion: PATCH con solo el trabajo devuelve el eco parcial con updatedAt
+  request:
+    path_params: {id: 2}
+    body:
+      job: Arquitecta de automatización
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user_updated
+    echo_body: true
+    json_absent: [name]
+
+borrar:
+  id: TC-API-032
+  descripcion: DELETE responde 204 sin cuerpo
+  request:
+    path_params: {id: 2}
+  expected:
+    status: 204
+    max_time_ms: 3000
+    body_empty: true
