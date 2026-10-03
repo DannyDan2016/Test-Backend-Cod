@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reqres/user",
+  "title": "Respuesta de GET /api/users/{id} (LegacyUserResponse de la OpenAPI 2.1.0)",
+  "type": "object",
+  "required": ["data"],
+  "properties": {
+    "data": { "$ref": "#/$defs/legacy_user" },
+    "support": { "type": "object" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "legacy_user": {
+      "type": "object",
+      "required": ["id", "email", "first_name", "last_name", "avatar"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "email": { "type": "string", "format": "email" },
+        "first_name": { "type": "string", "minLength": 1 },
+        "last_name": { "type": "string", "minLength": 1 },
+        "avatar": { "type": "string", "pattern": "^https://reqres\\.in/img/faces/\\d+-image\\.jpg$" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -2,6 +2,74 @@
 # Cada clave de primer nivel es un caso; su "id" debe coincidir con un tag @tc-* del escenario.
 # Claves admitidas en "expected": ver support/assertions.py.
 
+# --- Consultas -----------------------------------------------------------------------------
+
+listar_pagina_1:
+  id: TC-API-001
+  descripcion: La primera página trae 6 de los 12 usuarios y metadatos de paginación coherentes
+  request:
+    query: {page: 1}
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user_list
+    json_equals:
+      page: 1
+      per_page: 6
+      total: 12
+      total_pages: 2
+      data.0.id: 1
+      data.5.id: 6
+    json_length:
+      data: 6
+
+listar_pagina_2:
+  id: TC-API-002
+  descripcion: La segunda página trae los usuarios 7 a 12
+  request:
+    query: {page: 2}
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user_list
+    json_equals:
+      page: 2
+      total: 12
+      data.0.id: 7
+      data.5.id: 12
+    json_length:
+      data: 6
+
+consultar_existente:
+  id: TC-API-012
+  descripcion: El usuario 2 es Janet Weaver con todos sus campos
+  request:
+    path_params: {id: 2}
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user
+    headers:
+      Content-Type: '^application/json'
+    json_equals:
+      data.id: 2
+      data.email: janet.weaver@reqres.in
+      data.first_name: Janet
+      data.last_name: Weaver
+    json_matches:
+      data.avatar: '^https://reqres\.in/img/faces/2-image\.jpg$'
+
+consultar_inexistente:
+  id: TC-API-015
+  descripcion: Un id que no existe devuelve 404 con cuerpo vacío (DEV-001, la spec promete ErrorResponse)
+  request:
+    path_params: {id: 23}
+  expected:
+    status: 404
+    body_json: {}
+
+# --- Alta ----------------------------------------------------------------------------------
+
 crear_basico:
   id: TC-API-018
   descripcion: Crear un usuario con nombre y trabajo
@@ -31,3 +99,43 @@ crear_con_campos_extra:
     echo_body: true
     json_types:
       age: integer
+
+# --- Modificación y borrado ----------------------------------------------------------------
+
+reemplazar:
+  id: TC-API-026
+  descripcion: PUT devuelve el eco del payload con updatedAt y sin createdAt
+  request:
+    path_params: {id: 2}
+    body:
+      name: Janet Weaver
+      job: Líder de QA
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user_updated
+    echo_body: true
+
+actualizar_parcial:
+  id: TC-API-030
+  descripcion: PATCH con solo el trabajo devuelve el eco parcial con updatedAt
+  request:
+    path_params: {id: 2}
+    body:
+      job: Arquitecta de automatización
+  expected:
+    status: 200
+    max_time_ms: 3000
+    schema: reqres/user_updated
+    echo_body: true
+    json_absent: [name]
+
+borrar:
+  id: TC-API-032
+  descripcion: DELETE responde 204 sin cuerpo
+  request:
+    path_params: {id: 2}
+  expected:
+    status: 204
+    max_time_ms: 3000
+    body_empty: true

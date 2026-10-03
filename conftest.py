@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from api.reqres import ReqResClient, UsersService
+from api.reqres import AuthService, ReqResClient, UsersService
 from config.settings import Settings, load_settings
 from support.allure_http import attach_exchange
 from support.api_key_policy import apply_api_key_policy
@@ -70,3 +70,25 @@ def reqres_client(settings: Settings) -> Iterator[ReqResClient]:
 def users_service(reqres_client: ReqResClient) -> UsersService:
     """Service object de ``/users`` sobre el cliente de la sesión."""
     return UsersService(reqres_client)
+
+
+@pytest.fixture(scope="session")
+def auth_service(reqres_client: ReqResClient) -> AuthService:
+    """Service object de ``/register`` y ``/login`` sobre el cliente de la sesión."""
+    return AuthService(reqres_client)
+
+
+@pytest.fixture
+def users_service_with_key(settings: Settings) -> Iterator[Callable[[str], UsersService]]:
+    """Fábrica de ``UsersService`` con una api key concreta (p. ej. una inválida del YAML)."""
+    clientes: list[ReqResClient] = []
+
+    def crear(api_key: str) -> UsersService:
+        cliente = ReqResClient.from_settings(settings, api_key=api_key)
+        cliente.session.hooks["response"].append(attach_exchange)
+        clientes.append(cliente)
+        return UsersService(cliente)
+
+    yield crear
+    for cliente in clientes:
+        cliente.close()

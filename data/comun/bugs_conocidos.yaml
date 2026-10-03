@@ -1,0 +1,25 @@
+# Catálogo de bugs y desviaciones conocidos del sistema bajo prueba.
+# Un escenario @known-bug @bug:<ID> verifica el comportamiento CORRECTO y se ejecuta como
+# xfail(strict=True) con el "resumen" como motivo: si un día se corrige, el XPASS rompe la
+# ejecución para revisar el caso y retirar la marca.
+
+DEV-004:
+  sistema: ReqRes
+  endpoint: POST /api/login
+  resumen: ReqRes acepta cualquier password de un usuario predefinido (200 + token)
+  esperado: 400 o 401 con un error
+  observado: 200 con token (comprobado el 2026-10-01)
+
+BKR-BUG-3:
+  sistema: restful-booker
+  endpoint: DELETE /booking/{id}
+  resumen: El borrado correcto responde 201 Created en lugar de 200/204
+  esperado: 200 o 204
+  observado: 201 con cuerpo "Created" (comprobado el 2026-10-01)
+
+BKR-BUG-6:
+  sistema: restful-booker
+  endpoint: POST /booking
+  resumen: La creación de una reserva responde 200 OK en lugar de 201 Created
+  esperado: 201
+  observado: 200 con bookingid y la reserva (comprobado el 2026-10-01)

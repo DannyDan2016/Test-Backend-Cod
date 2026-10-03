@@ -14,7 +14,8 @@ el resto de diferencias. Las claves admitidas en ``expected`` son:
 - ``json_types``: ``{ruta: tipo}`` (string, integer, number, boolean, object, array, null).
 - ``json_length``: ``{ruta: n}``.
 - ``json_absent``: lista de rutas que no deben existir.
-- ``echo_body``: ``true`` si la respuesta debe devolver cada campo enviado con el mismo valor.
+- ``echo_body``: ``true`` si la respuesta devuelve cada campo enviado con el mismo valor y tipo,
+  o la ruta donde está ese eco si va anidado (p. ej. ``booking``).
 """
 
 import re
@@ -128,11 +129,17 @@ def _errores_cuerpo(body: Any, expected: dict[str, Any], sent_body: Any) -> list
         if get_path(body, ruta) is not _FALTA:
             errores.append(f"{ruta}: no debería estar presente")
 
-    if expected.get("echo_body") and isinstance(sent_body, dict):
+    eco = expected.get("echo_body")
+    if eco and isinstance(sent_body, dict):
+        # true: el eco está en la raíz; una ruta: el eco está anidado (p. ej. "booking")
+        base = body if eco is True else get_path(body, eco)
+        prefijo = "" if eco is True else f"{eco}."
         for clave, valor in sent_body.items():
-            real = get_path(body, clave) if isinstance(body, dict) else _FALTA
+            real = base.get(clave, _FALTA) if isinstance(base, dict) else _FALTA
             if real is _FALTA or real != valor or type(real) is not type(valor):
-                errores.append(f"eco {clave}: enviado {valor!r}, devuelto {_mostrar(real)}")
+                errores.append(
+                    f"eco {prefijo}{clave}: enviado {valor!r}, devuelto {_mostrar(real)}"
+                )
     return errores
 
 
@@ -140,6 +147,7 @@ def assert_expected(
     resp: requests.Response, expected: dict[str, Any], sent_body: Any = None
 ) -> None:
     """Verifica ``resp`` contra ``expected``; lanza ``AssertionError`` con todas las diferencias."""
+    __tracebackhide__ = True  # el fallo se muestra en el paso, no dentro del helper
     _validar_expected(expected)
     errores: list[str] = []
 
