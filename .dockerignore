@@ -1,0 +1,42 @@
+# Contexto de build mínimo: solo el código de la suite y sus dependencias.
+
+# Secretos: el .env NUNCA debe entrar en la imagen (se inyecta en runtime con env_file)
+.env
+.env.*
+!.env.example
+
+# Control de versiones
+.git
+.gitignore
+.gitattributes
+
+# Entornos virtuales y cachés de Python / herramientas
+.venv/
+venv/
+**/__pycache__/
+**/*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Reportes y resultados generados (se escriben en runtime en el volumen ./reports)
+reports/
+reportes/
+report.html
+allure-results/
+allure-report/
+
+# Archivos de Docker (no los necesita la imagen)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Editores, SO y documentación
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.md
+LICENSE
