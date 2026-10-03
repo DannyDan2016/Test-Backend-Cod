@@ -1,6 +1,11 @@
 # Imagen para ejecutar la suite de pruebas de API de forma reproducible.
 # Python 3.12 alineado con .python-version y con target-version de ruff (py312).
-FROM python:3.12-slim
+#
+# Etapas:
+#   base    -> dependencias de ejecución, usuario sin privilegios y código
+#   lint    -> base + herramientas de desarrollo (ruff); la usa el servicio "lint" de compose
+#   runtime -> etapa final por defecto: ejecuta pytest
+FROM python:3.12-slim AS base
 
 # Sin archivos .pyc y con la salida de pytest sin buffer (logs en tiempo real)
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -28,6 +33,20 @@ COPY . .
 
 # Único directorio escribible: aquí escribe pytest los resultados de Allure
 RUN mkdir -p /app/reports && chown qa:qa /app/reports
+
+
+FROM base AS lint
+
+# Herramientas de calidad (versiones fijadas en requirements-dev.txt)
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+USER qa
+
+# --no-cache: /app no es escribible para qa y la caché de ruff no aporta nada en un contenedor
+ENTRYPOINT ["sh", "-c", "ruff check --no-cache . && ruff format --check --no-cache ."]
+
+
+FROM base AS runtime
 
 USER qa
 

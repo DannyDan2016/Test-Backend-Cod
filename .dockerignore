@@ -9,6 +9,7 @@
 .git
 .gitignore
 .gitattributes
+.github/
 
 # Entornos virtuales y cachés de Python / herramientas
 .venv/

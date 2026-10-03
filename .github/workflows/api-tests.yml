@@ -1,0 +1,166 @@
+# Lint y pruebas de API dentro de la imagen Docker del repo (docker compose).
+#
+# - push a main y pull requests: lint + smoke (y tests unitarios del framework)
+# - cada noche (schedule): regresión completa
+# - manual (workflow_dispatch): expresión de marcadores y ambiente a elegir
+# - en main (push, schedule o manual): el reporte Allure 3 se publica en GitHub Pages
+#
+# Requisitos del repositorio:
+# - Secret REQRES_API_KEY (Settings > Secrets and variables > Actions). Sin él la sesión falla,
+#   salvo en PRs desde forks o de Dependabot, que no reciben secrets.
+# - Pages con origen "GitHub Actions" (Settings > Pages > Build and deployment > Source).
+name: API tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Regresión nocturna (05:00 UTC)
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      marcadores:
+        description: "Expresión -m de pytest (p. ej. 'smoke', 'regression and not known_bug'). Vacío = suite completa"
+        required: false
+        default: ""
+        type: string
+      ambiente:
+        description: "Ambiente objetivo"
+        required: true
+        default: prod
+        type: choice
+        options: [prod, staging]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: Lint (ruff en Docker)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir la imagen de lint
+        run: docker compose build lint
+
+      - name: ruff check y ruff format --check
+        run: docker compose run --rm lint
+
+  tests:
+    name: Pruebas (${{ github.event_name }})
+    needs: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      TEST_ENV: ${{ inputs.ambiente || 'prod' }}
+      REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+      # Los PRs desde forks y los de Dependabot no reciben secrets: se omiten los @requiere_key
+      ALLOW_MISSING_API_KEY: ${{ (github.event.pull_request.head.repo.fork || github.actor == 'dependabot[bot]') && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Elegir la selección de pruebas
+        id: seleccion
+        env:
+          EVENTO: ${{ github.event_name }}
+          MARCADORES_MANUALES: ${{ inputs.marcadores }}
+        run: |
+          case "$EVENTO" in
+            schedule) marcadores="" ;;
+            workflow_dispatch) marcadores="$MARCADORES_MANUALES" ;;
+            *) marcadores="smoke or unit" ;;
+          esac
+          echo "marcadores=$marcadores" >> "$GITHUB_OUTPUT"
+          echo "Selección: ${marcadores:-suite completa} | ambiente: $TEST_ENV" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Construir la imagen de pruebas con el UID del runner
+        run: |
+          mkdir -p reports
+          echo "HOST_UID=$(id -u)" >> "$GITHUB_ENV"
+          echo "HOST_GID=$(id -g)" >> "$GITHUB_ENV"
+          HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose build api-tests
+
+      - name: Ejecutar pytest en el contenedor
+        env:
+          MARCADORES: ${{ steps.seleccion.outputs.marcadores }}
+        run: |
+          args=(--junitxml=reports/junit.xml)
+          if [ -n "$MARCADORES" ]; then args+=(-m "$MARCADORES"); fi
+          docker compose run --rm api-tests "${args[@]}"
+
+      - name: Resumen de resultados
+        if: ${{ !cancelled() && hashFiles('reports/junit.xml') != '' }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          raiz = ET.parse("reports/junit.xml").getroot()
+          suite = raiz if raiz.tag == "testsuite" else raiz.find("testsuite")
+          total, fallos, errores, omitidos = (
+              int(suite.get(k, 0)) for k in ("tests", "failures", "errors", "skipped")
+          )
+          print("| Total | Correctos | Fallidos | Errores | Omitidos / xfail |")
+          print("|---|---|---|---|---|")
+          print(f"| {total} | {total - fallos - errores - omitidos} | {fallos} | {errores} | {omitidos} |")
+          PY
+
+      - name: Generar el reporte Allure 3
+        if: ${{ !cancelled() && hashFiles('reports/allure-results/*.json') != '' }}
+        run: docker compose --profile report run --rm allure
+
+      - name: Subir resultados (JUnit y allure-results)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: resultados-${{ github.run_id }}
+          path: |
+            reports/junit.xml
+            reports/allure-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Subir el reporte Allure
+        if: ${{ !cancelled() && hashFiles('reports/allure-report/index.html') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reporte-allure
+          path: reports/allure-report/
+          retention-days: 14
+
+  publicar-reporte:
+    name: Publicar el reporte en GitHub Pages
+    needs: tests
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - name: Descargar el reporte Allure
+        uses: actions/download-artifact@v8
+        with:
+          name: reporte-allure
+          path: reporte
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: reporte
+
+      - name: Desplegar en GitHub Pages
+        id: despliegue
+        uses: actions/deploy-pages@v5
