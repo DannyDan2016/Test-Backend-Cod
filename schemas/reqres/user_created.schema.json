@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reqres/user_created",
+  "title": "Respuesta de POST /api/users (LegacyMutationResponse de la OpenAPI 2.1.0)",
+  "description": "Eco del payload más id y createdAt. La spec no marca campos obligatorios; aquí se exigen id y createdAt porque son la evidencia de la creación.",
+  "type": "object",
+  "required": ["id", "createdAt"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^\\d+$" },
+    "createdAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    }
+  },
+  "not": { "required": ["updatedAt"] },
+  "additionalProperties": true
+}

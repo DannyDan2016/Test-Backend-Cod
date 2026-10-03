@@ -1,5 +1,12 @@
 # Dependencias de ejecución de la suite (versiones fijadas para reproducibilidad)
 requests==2.34.2
 pytest==9.1.1
-allure-pytest==2.16.2
+# BDD con Gherkin en español sobre pytest
+pytest-bdd==9.0.0
+# Reporte Allure para pytest-bdd (sustituye a allure-pytest: no deben convivir)
+allure-pytest-bdd==2.16.2
+# Contratos de las respuestas (JSON Schema draft 2020-12)
+jsonschema==4.26.0
+# Datos de prueba y valores esperados por ambiente
+PyYAML==6.0.3
 python-dotenv==1.2.3

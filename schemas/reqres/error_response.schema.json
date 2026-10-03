@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reqres/error_response",
+  "title": "Error de ReqRes (ErrorResponse de la OpenAPI 2.1.0)",
+  "description": "La spec solo exige error; las respuestas reales incluyen además message, que aquí también se exige.",
+  "type": "object",
+  "required": ["error", "message"],
+  "properties": {
+    "error": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

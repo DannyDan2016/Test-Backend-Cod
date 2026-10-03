@@ -1,0 +1,13 @@
+# Robustez de ReqRes ante peticiones inválidas.
+
+json_malformado:
+  id: TC-API-019
+  descripcion: Un cuerpo JSON realmente malformado (coma final) se rechaza como invalid_json
+  request:
+    # Se envía tal cual con Content-Type application/json (UsersService.create_raw)
+    raw_body: '{ "name": "Daniel Bernal", "job": "Prueba Automatización", "age": 33,}'
+  expected:
+    status: 400
+    schema: reqres/error_response
+    json_equals:
+      error: invalid_json

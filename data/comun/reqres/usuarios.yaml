@@ -1,0 +1,33 @@
+# Datos de entrada y valores esperados del recurso /users de ReqRes.
+# Cada clave de primer nivel es un caso; su "id" debe coincidir con un tag @tc-* del escenario.
+# Claves admitidas en "expected": ver support/assertions.py.
+
+crear_basico:
+  id: TC-API-018
+  descripcion: Crear un usuario con nombre y trabajo
+  request:
+    body:
+      name: John Arias
+      job: Ingeniero de Software
+  expected:
+    status: 201
+    max_time_ms: 3000
+    schema: reqres/user_created
+    echo_body: true
+
+crear_con_campos_extra:
+  id: TC-API-021
+  descripcion: Los campos adicionales se devuelven con su valor y su tipo (age entero)
+  request:
+    body:
+      name: Daniel Bernal
+      job: Prueba Automatización
+      gender: Masculino
+      age: 33
+  expected:
+    status: 201
+    max_time_ms: 3000
+    schema: reqres/user_created
+    echo_body: true
+    json_types:
+      age: integer
