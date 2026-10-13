@@ -5,7 +5,7 @@
 #   base    -> dependencias de ejecución, usuario sin privilegios y código
 #   lint    -> base + herramientas de desarrollo (ruff); la usa el servicio "lint" de compose
 #   runtime -> etapa final por defecto: ejecuta pytest
-FROM python:3.12-slim AS base
+FROM python:3.14-slim AS base
 
 # Sin archivos .pyc y con la salida de pytest sin buffer (logs en tiempo real)
 ENV PYTHONDONTWRITEBYTECODE=1 \
