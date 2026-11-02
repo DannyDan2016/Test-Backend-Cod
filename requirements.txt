@@ -1,6 +1,6 @@
 # Dependencias de ejecución de la suite (versiones fijadas para reproducibilidad)
 requests==2.34.2
-pytest==9.1.1
+pytest==9.2.0
 # BDD con Gherkin en español sobre pytest
 pytest-bdd==9.0.0
 # Reporte Allure para pytest-bdd (sustituye a allure-pytest: no deben convivir)
